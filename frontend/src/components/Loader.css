@@ -1,0 +1,22 @@
+/* Прибирає чорний фон через screen blend mode */
+.loader-planet-video {
+  mix-blend-mode: screen;
+  filter: contrast(1.15) brightness(1.1) saturate(1.1);
+}
+
+/* Якщо фон лоадера темний — screen працює */
+.loader-planet-container {
+  background: transparent;
+}
+
+/* Крапки */
+.loader-dot {
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.loader-dot-2 { animation-delay: 0.2s; }
+.loader-dot-3 { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 1; }
+}
