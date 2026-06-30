@@ -2,16 +2,15 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import Moon from './moon'
 
 const navigation = [
-  { name: 'Planets', element: <Link to="SolarSystem" /> },
-  { name: 'Constellation', element: <Link to="Constellation" /> },
-  { name: 'Earth', element: <Link to="Earth" /> },
-  { name: 'Move to another planet', element: <Link to="Moon" /> },
+  { name: 'Planets', element: <Link to="/planets" /> },
+  { name: 'Constellation', element: <Link to="/constellation" /> },
+  { name: 'Mars', element: <Link to="/Mars" /> },
+  { name: 'Move to another planet', element: <Link to="/Jupiter" /> },
 ]
 
-export default function Earth() {
+export default function Mars() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -25,7 +24,7 @@ export default function Earth() {
         playsInline
         className="fixed inset-0 w-full h-full object-cover z-0 opacity-90"
       >
-        <source src="/assets/earth2.mp4" type="video/mp4" />
+        <source src="assets/mars.mp4" type="video/mp4" />
       </video>
 
       {/* Темний оверлей */}
@@ -39,14 +38,14 @@ export default function Earth() {
 
             {/* Логотип */}
             <div className="flex lg:flex-1">
-              <a href="#" className="-m-1.5 p-1.5">
-                <span className="sr-only">Earth</span>
+              <Link to="/" className="-m-1.5 p-1.5">
+                <span className="sr-only">Mars</span>
                 <img
                   alt=""
                   src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white&shade=400"
                   className="h-8 w-auto"
                 />
-              </a>
+              </Link>
             </div>
 
             {/* Бургер на мобільному */}
@@ -66,21 +65,21 @@ export default function Earth() {
               {navigation.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.href}
+                  to={item.to}
                   className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
                 >
                   {item.name}
                 </Link>
               ))}
             </div>
-            {/* Log in десктоп */}
+
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-              <a
-                href="#"
+              <Link
+                to="/settings"
                 className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
               >
                 Settings <span aria-hidden="true">&rarr;</span>
-              </a>
+              </Link>
             </div>
 
           </nav>
@@ -90,14 +89,14 @@ export default function Earth() {
             <div className="fixed inset-0 z-50" />
             <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900 p-6 sm:max-w-sm sm:ring-1 sm:ring-white/10">
               <div className="flex items-center justify-between">
-                <a href="#" className="-m-1.5 p-1.5">
-                  <span className="sr-only">Earth</span>
+                <Link to="/" className="-m-1.5 p-1.5">
+                  <span className="sr-only">Mars</span>
                   <img
                     alt=""
                     src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white&shade=400"
                     className="h-8 w-auto"
                   />
-                </a>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
@@ -112,56 +111,55 @@ export default function Earth() {
                 <div className="-my-6 divide-y divide-white/10">
                   <div className="space-y-2 py-6">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.to}
+                        onClick={() => setMobileMenuOpen(false)}
                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/10"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                   <div className="py-6">
-                    <a
-                      href="#"
+                    <Link
+                      to="/settings"
+                      onClick={() => setMobileMenuOpen(false)}
                       className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/10"
                     >
                       Settings
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
-
             </DialogPanel>
           </Dialog>
         </header>
 
-        {/* Hero секція — текст зліва */}
-        <div className="relative isolate px-6 pt-14 lg:px-8 min-h-screen flex items-center">
-          <div className="max-w-xl lg:max-w-2xl lg:ml-24 py-32 sm:py-48 lg:py-56">
+        {/* Hero секція — текст СПРАВА */}
+        <div className="relative isolate px-6 pt-14 lg:px-8 min-h-screen flex items-center justify-end">
+          <div className="max-w-xl lg:max-w-2xl lg:mr-24 py-32 sm:py-48 lg:py-56">
             <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-7xl leading-tight">
-              Welcome to the{' '}
-              <span className="text-indigo-400">Earth</span>{' '}
-              {' '}
-              <span className="text-indigo-300"></span>
+              Welcome to{' '}
+              <span className="text-red-400">Mars</span>
             </h1>
             <p className="mt-8 text-lg font-medium text-gray-300 sm:text-xl/8">
-              Earth is the third planet from the Sun and the only astronomical object known to harbor life.
-              About 29.2% of Earth's surface is land with remaining 70.8% covered with water.
-              Earth's distance from the Sun, physical properties and geological history have allowed life to evolve and thrive.
+              Mars is the fourth planet from the Sun and the second-smallest planet in the Solar System.
+              Mars is a terrestrial planet with a thin atmosphere, and has a surface covered in reddish rust.
             </p>
             <div className="mt-10 flex items-center gap-x-6">
-              <a
-                href="#"
-                className="rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-500 transition-colors"
+              <Link
+                to="/learn-more"
+                className="rounded-md bg-red-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-red-600 transition-colors"
               >
                 Learn more
-              </a>
-              <a
-                href="#"
-                className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
+              </Link>
+              <Link
+                to="/gallery"
+                className="text-sm/6 font-semibold text-white hover:text-red-300 transition-colors"
               >
-              </a>
+                View gallery
+              </Link>
             </div>
           </div>
         </div>
