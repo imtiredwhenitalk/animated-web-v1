@@ -2,17 +2,26 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import Moon from './moon'
+import { useLanguage } from '../components/Languagecontext'
 
 const navigation = [
-  { name: 'Planets', element: <Link to="SolarSystem" /> },
-  { name: 'Constellation', element: <Link to="Constellation" /> },
-  { name: 'Earth', element: <Link to="Earth" /> },
-  { name: 'Move to another planet', element: <Link to="Moon" /> },
+  { name: 'Planets', element: <Link to="/planets" /> },
+  { name: 'Constellation', element: <Link to="/constellation" /> },
+  { name: 'Earth', element: <Link to="/earth" /> },
+  { name: 'Move to another planet', element: <Link to="/mars" /> },
 ]
 
 export default function Earth() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t } = useLanguage()
+  const copy = t.planets.pages.earth
+
+  const navLabel = (name: string) => {
+    if (name === 'Planets') return t.planets.ui.planets
+    if (name === 'Constellation') return t.planets.ui.constellation
+    if (name === 'Move to another planet') return t.planets.ui.moveToAnotherPlanet
+    return name
+  }
 
   return (
     <div className="bg-black min-h-screen">
@@ -66,21 +75,21 @@ export default function Earth() {
               {navigation.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.href}
+                  to={item.element.props.to}
                   className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
                 >
-                  {item.name}
+                  {navLabel(item.name)}
                 </Link>
               ))}
             </div>
             {/* Log in десктоп */}
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-              <a
-                href="#"
+              <Link
+                to="/settings"
                 className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
               >
-                Settings <span aria-hidden="true">&rarr;</span>
-              </a>
+                {t.settings.title} <span aria-hidden="true">&rarr;</span>
+              </Link>
             </div>
 
           </nav>
@@ -112,22 +121,22 @@ export default function Earth() {
                 <div className="-my-6 divide-y divide-white/10">
                   <div className="space-y-2 py-6">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.element.props.to}
                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/10"
                       >
-                        {item.name}
-                      </a>
+                        {navLabel(item.name)}
+                      </Link>
                     ))}
                   </div>
                   <div className="py-6">
-                    <a
-                      href="#"
+                    <Link
+                      to="/settings"
                       className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/10"
                     >
-                      Settings
-                    </a>
+                      {t.settings.title}
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -140,27 +149,26 @@ export default function Earth() {
         <div className="relative isolate px-6 pt-14 lg:px-8 min-h-screen flex items-center">
           <div className="max-w-xl lg:max-w-2xl lg:ml-24 py-32 sm:py-48 lg:py-56">
             <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-7xl leading-tight">
-              Welcome to the{' '}
+              {copy.intro}{' '}
               <span className="text-indigo-400">Earth</span>{' '}
               {' '}
               <span className="text-indigo-300"></span>
             </h1>
             <p className="mt-8 text-lg font-medium text-gray-300 sm:text-xl/8">
-              Earth is the third planet from the Sun and the only astronomical object known to harbor life.
-              About 29.2% of Earth's surface is land with remaining 70.8% covered with water.
-              Earth's distance from the Sun, physical properties and geological history have allowed life to evolve and thrive.
+              {copy.description}
             </p>
             <div className="mt-10 flex items-center gap-x-6">
               <a
                 href="#"
                 className="rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-500 transition-colors"
               >
-                Learn more
+                {copy.primaryAction}
               </a>
               <a
                 href="#"
                 className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
               >
+                {copy.secondaryAction}
               </a>
             </div>
           </div>

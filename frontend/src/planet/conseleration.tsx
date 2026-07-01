@@ -92,7 +92,7 @@ const ZODIAC = [
 
 export default function Constellation() {
   const navigate = useNavigate()
-  const [active, setActive] = useState(null)
+  const [active, setActive] = useState<number | null>(null)
 
   return (
     <div style={{

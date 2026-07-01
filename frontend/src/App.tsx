@@ -1,9 +1,8 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import Animated_Loader from './components/Loader'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Earth from './planet/earth'
 import Moon from './planet/moon'
 import Mars from './planet/mars'
+import Animated_Loader from './components/Loader'
 import Jupiter from './planet/jupiter'
 import SolarSystem from './planet/planets'
 import Mercury from './planet/mercury';
@@ -14,25 +13,16 @@ import Neptune from './planet/neptune';
 import Pluto from './planet/pluto';
 import Sun from './planet/sun';
 import Constellation from './planet/conseleration';
+import Settings from './components/settings';
 import './App.css'
 
-function PageLoader({ children }) {
-  const location = useLocation()
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    setLoading(true)
-    const timer = setTimeout(() => setLoading(false), 3000)
-    return () => clearTimeout(timer)
-  }, [location])
-
-  return loading ? <Animated_Loader /> : <>{children}</>
-}
-
 function AppRoutes() {
+  const location = useLocation()
+
   return (
-    <PageLoader>
+    <Animated_Loader key={location.pathname}>
       <Routes>
+        <Route path="/planets" element={<SolarSystem />} />
         <Route path="/" element={<SolarSystem />} />
         <Route path="/sun" element={<Sun />} />
         <Route path="/mercury" element={<Mercury />} />
@@ -46,17 +36,18 @@ function AppRoutes() {
         <Route path="/neptune" element={<Neptune />} />
         <Route path="/pluto" element={<Pluto />} />
         <Route path="/constellation" element={<Constellation />} />
+        <Route path="/Mars" element={<Mars />} />
+        <Route path="/Jupiter" element={<Jupiter />} />
+        <Route path="/learn-more" element={<SolarSystem />} />
+        <Route path="/gallery" element={<SolarSystem />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
-    </PageLoader>
+    </Animated_Loader>
   )
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  )
+  return <AppRoutes />
 }
 
 export default App

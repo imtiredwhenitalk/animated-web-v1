@@ -1,8 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as THREE from 'three'
+import { useLanguage } from '../components/Languagecontext'
 
-const PLANETS = [
+type PlanetInfo = {
+  name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation'
+  radius?: number
+  distance?: number
+  speed?: number
+  axisSpeed?: number
+  tilt: number
+  color: string
+  emissive: string
+  rings: boolean
+  stripes?: boolean
+  ringsColor?: string
+  description: string
+  route?: string
+}
+
+const PLANETS: PlanetInfo[] = [
   {
     name: 'Sun', radius: 4, distance: 0, speed: 0, axisSpeed: 0,
     tilt: 0,
@@ -88,11 +105,12 @@ const PLANETS = [
 // sphere-building / animation loop, only the sidebar button list below.
 const ORBIT_PLANETS = PLANETS.filter(p => p.name !== 'Constellation')
 
-function makePlanetTexture(planet) {
+function makePlanetTexture(planet: PlanetInfo): THREE.CanvasTexture {
   const size = 512
   const c = document.createElement('canvas')
   c.width = size; c.height = size
   const ctx = c.getContext('2d')
+  if (!ctx) return new THREE.CanvasTexture(c)
 
   if (planet.stripes) {
     // Jupiter bands
@@ -234,7 +252,7 @@ function makePlanetTexture(planet) {
   return new THREE.CanvasTexture(c)
 }
 
-function makeOrbitLine(radius) {
+function makeOrbitLine(radius: number) {
   const pts = []
   for (let i = 0; i <= 128; i++) {
     const a = (i / 128) * Math.PI * 2
@@ -245,13 +263,15 @@ function makeOrbitLine(radius) {
 }
 
 export default function SolarSystem() {
-  const mountRef = useRef(null)
+  const mountRef = useRef<HTMLDivElement | null>(null)
   const navigate = useNavigate()
-  const [selected, setSelected] = useState(null)
-  const [hovered, setHovered] = useState(null)
-  const selectedRef = useRef(null)
-  const hoveredRef = useRef(null)
-  const planetMeshesRef = useRef([])
+  const [selected, setSelected] = useState<PlanetInfo | null>(null)
+  const [hovered, setHovered] = useState<PlanetInfo | null>(null)
+  const { t } = useLanguage()
+  const selectedRef = useRef<PlanetInfo | null>(null)
+  const hoveredRef = useRef<PlanetInfo | null>(null)
+  const planetMeshesRef = useRef<THREE.Mesh[]>([])
+  const copy = t.planets.explorer
 
   useEffect(() => {
     const mount = mountRef.current
@@ -284,6 +304,7 @@ export default function SolarSystem() {
     const sunTex = (() => {
       const c = document.createElement('canvas'); c.width = 256; c.height = 256
       const ctx = c.getContext('2d')
+      if (!ctx) return new THREE.CanvasTexture(c)
       const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
       g.addColorStop(0, '#fff7a0')
       g.addColorStop(0.3, '#ffcc00')
@@ -303,6 +324,7 @@ export default function SolarSystem() {
     const glowTex = (() => {
       const c = document.createElement('canvas'); c.width = 256; c.height = 256
       const ctx = c.getContext('2d')
+      if (!ctx) return new THREE.CanvasTexture(c)
       const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
       g.addColorStop(0, 'rgba(255,200,0,0.6)')
       g.addColorStop(0.4, 'rgba(255,120,0,0.2)')
@@ -320,13 +342,13 @@ export default function SolarSystem() {
     scene.add(sunLight)
 
     // ── PLANETS ───────────────────────────────────────────────
-    const planetMeshes = []
-    const pivots = []
-    const glowSprites = []
+    const planetMeshes: THREE.Mesh[] = []
+    const pivots: THREE.Object3D[] = []
+    const glowSprites: THREE.Sprite[] = []
 
     ORBIT_PLANETS.forEach((p) => {
       // Orbit line
-      scene.add(makeOrbitLine(p.distance))
+      scene.add(makeOrbitLine(p.distance!))
 
       // Pivot for orbit
       const pivot = new THREE.Object3D()
@@ -334,7 +356,7 @@ export default function SolarSystem() {
       pivots.push(pivot)
 
       // Planet mesh
-      const geo = new THREE.SphereGeometry(p.radius, 48, 48)
+      const geo = new THREE.SphereGeometry(p.radius!, 48, 48)
       const mat = new THREE.MeshPhongMaterial({
         map: makePlanetTexture(p),
         emissive: new THREE.Color(p.emissive),
@@ -344,7 +366,7 @@ export default function SolarSystem() {
       })
       const mesh = new THREE.Mesh(geo, mat)
       mesh.rotation.z = (p.tilt * Math.PI) / 180
-      mesh.position.x = p.distance
+      mesh.position.x = p.distance!
       mesh.userData = { planet: p }
       pivot.add(mesh)
       planetMeshes.push(mesh)
@@ -353,7 +375,7 @@ export default function SolarSystem() {
       // Atmosphere for Earth
       if (p.name === 'Earth') {
         const atmoMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(p.radius * 1.05, 32, 32),
+          new THREE.SphereGeometry(p.radius! * 1.05, 32, 32),
           new THREE.MeshPhongMaterial({
             color: 0x4488ff, transparent: true, opacity: 0.12,
             side: THREE.FrontSide, depthWrite: false,
@@ -378,17 +400,18 @@ export default function SolarSystem() {
 
       // Saturn rings
       if (p.rings && p.name === 'Saturn') {
-        const ringGeo = new THREE.RingGeometry(p.radius * 1.4, p.radius * 2.6, 80)
+        const ringGeo = new THREE.RingGeometry(p.radius! * 1.4, p.radius! * 2.6, 80)
         // Fix UV for ring
         const pos = ringGeo.attributes.position
         const uv = ringGeo.attributes.uv
         for (let i = 0; i < pos.count; i++) {
           const v = new THREE.Vector3().fromBufferAttribute(pos, i)
-          uv.setXY(i, (v.length() - p.radius * 1.4) / (p.radius * 1.2), 0)
+          uv.setXY(i, (v.length() - p.radius! * 1.4) / (p.radius! * 1.2), 0)
         }
         const ringTex = (() => {
           const c = document.createElement('canvas'); c.width = 256; c.height = 4
           const ctx = c.getContext('2d')
+          if (!ctx) return new THREE.CanvasTexture(c)
           const g = ctx.createLinearGradient(0, 0, 256, 0)
           g.addColorStop(0, 'rgba(200,180,120,0)')
           g.addColorStop(0.1, 'rgba(220,200,140,0.6)')
@@ -411,7 +434,7 @@ export default function SolarSystem() {
 
       // Uranus thin rings
       if (p.rings && p.name === 'Uranus') {
-        const rg = new THREE.RingGeometry(p.radius * 1.5, p.radius * 1.8, 64)
+        const rg = new THREE.RingGeometry(p.radius! * 1.5, p.radius! * 1.8, 64)
         const rm = new THREE.MeshBasicMaterial({
           color: 0x7de8e8, side: THREE.DoubleSide, transparent: true, opacity: 0.3
         })
@@ -423,6 +446,7 @@ export default function SolarSystem() {
       // Glow sprite
       const glowC = document.createElement('canvas'); glowC.width = 64; glowC.height = 64
       const gctx = glowC.getContext('2d')
+      if (!gctx) return
       const gg = gctx.createRadialGradient(32, 32, 0, 32, 32, 32)
       gg.addColorStop(0, `rgba(255,255,255,0)`)
       gg.addColorStop(0.5, `rgba(255,255,255,0)`)
@@ -432,7 +456,7 @@ export default function SolarSystem() {
       const glowSp = new THREE.Sprite(new THREE.SpriteMaterial({
         map: new THREE.CanvasTexture(glowC), transparent: true, blending: THREE.AdditiveBlending
       }))
-      glowSp.scale.set(p.radius * 4, p.radius * 4, 1)
+      glowSp.scale.set(p.radius! * 4, p.radius! * 4, 1)
       mesh.add(glowSp)
       glowSprites.push(glowSp)
     })
@@ -450,7 +474,7 @@ export default function SolarSystem() {
     const raycaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
 
-    const getHit = (clientX, clientY) => {
+    const getHit = (clientX: number, clientY: number) => {
       const rect = mount.getBoundingClientRect()
       mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1
       mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1
@@ -459,7 +483,7 @@ export default function SolarSystem() {
       return hits.length > 0 ? hits[0].object : null
     }
 
-    const onClick = (e) => {
+    const onClick = (e: MouseEvent) => {
       const hit = getHit(e.clientX, e.clientY)
       if (hit) {
         const p = hit.userData.planet
@@ -471,7 +495,7 @@ export default function SolarSystem() {
       }
     }
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
       const hit = getHit(e.clientX, e.clientY)
       const p = hit ? hit.userData.planet : null
       hoveredRef.current = p
@@ -487,16 +511,16 @@ export default function SolarSystem() {
     let camTheta = Math.atan2(100, 0), camPhi = Math.atan2(55, Math.sqrt(100 * 100 + 0))
     let camR = Math.sqrt(55 * 55 + 100 * 100)
 
-    const onDown = (e) => { isDragging = true; prevX = e.clientX; prevY = e.clientY }
+    const onDown = (e: MouseEvent) => { isDragging = true; prevX = e.clientX; prevY = e.clientY }
     const onUp = () => { isDragging = false }
-    const onMove = (e) => {
+    const onMove = (e: MouseEvent) => {
       if (!isDragging) return
       const dx = e.clientX - prevX, dy = e.clientY - prevY
       camTheta -= dx * 0.005
       camPhi = Math.max(0.1, Math.min(Math.PI / 2.1, camPhi - dy * 0.005))
       prevX = e.clientX; prevY = e.clientY
     }
-    const onWheel = (e) => {
+    const onWheel = (e: WheelEvent) => {
       camR = Math.max(25, Math.min(220, camR + e.deltaY * 0.15))
     }
 
@@ -506,7 +530,7 @@ export default function SolarSystem() {
     mount.addEventListener('wheel', onWheel)
 
     // ── ANIMATE ───────────────────────────────────────────────
-    let frame
+    let frame: number
     let t = 0
     const animate = () => {
       frame = requestAnimationFrame(animate)
@@ -521,8 +545,8 @@ export default function SolarSystem() {
 
       // Orbit + axis rotation
       pivots.forEach((pivot, i) => {
-        pivot.rotation.y += ORBIT_PLANETS[i].speed * 0.3
-        planetMeshes[i].rotation.y += ORBIT_PLANETS[i].axisSpeed
+        pivot.rotation.y += ORBIT_PLANETS[i].speed! * 0.3
+        planetMeshes[i].rotation.y += ORBIT_PLANETS[i].axisSpeed!
 
         // Hover scale
         const isHovered = hoveredRef.current?.name === ORBIT_PLANETS[i].name
@@ -572,8 +596,8 @@ export default function SolarSystem() {
 
       {/* Title */}
       <div style={{ position: 'absolute', top: 28, left: 36, pointerEvents: 'none' }}>
-        <div style={{ fontSize: 26, fontWeight: 700, color: 'rgba(220,230,255,0.9)', letterSpacing: '0.05em' }}>Solar System</div>
-        <div style={{ fontSize: 12, color: 'rgba(140,160,255,0.5)', marginTop: 3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>8 planets · Click to explore</div>
+        <div style={{ fontSize: 26, fontWeight: 700, color: 'rgba(220,230,255,0.9)', letterSpacing: '0.05em' }}>{copy.title}</div>
+        <div style={{ fontSize: 12, color: 'rgba(140,160,255,0.5)', marginTop: 3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{copy.subtitle}</div>
       </div>
 
       {/* Planet buttons sidebar */}
@@ -583,15 +607,15 @@ export default function SolarSystem() {
       }}>
         {PLANETS.map(p => {
           const isActive = hovered?.name === p.name || selected?.name === p.name
-          const isMoonActive = hovered?.name === 'Moon' || selected?.name === 'Moon'
-          const renderButton = (planet, active, indent = false) => (
+          const isMoonActive = false
+          const renderButton = (planet: { name: string; color: string; route?: string }, active: boolean, indent = false) => (
             <button
               key={planet.name}
               onClick={() => {
                 if (planet.route) {
                   navigate(planet.route)
                 } else {
-                  setSelected(planet)
+                  setSelected(planet as PlanetInfo)
                 }
               }}
               style={{
@@ -625,7 +649,7 @@ export default function SolarSystem() {
             return (
               <div key={p.name} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {renderButton(p, isActive)}
-                {renderButton({ name: 'Moon', color: '#aaaaaa', route: '/moon' }, isMoonActive, true)}
+                {renderButton({ name: copy.moonLabel, color: '#aaaaaa', route: '/moon' }, isMoonActive, true)}
               </div>
             )
           }
@@ -646,9 +670,9 @@ export default function SolarSystem() {
             <div style={{ width: 12, height: 12, borderRadius: '50%', background: selected.color }} />
             <span style={{ fontSize: 20, fontWeight: 700, color: '#e8eeff', letterSpacing: '0.05em' }}>{selected.name}</span>
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(160,175,255,0.7)', lineHeight: 1.6, marginBottom: 8 }}>{selected.description}</div>
+          <div style={{ fontSize: 13, color: 'rgba(160,175,255,0.7)', lineHeight: 1.6, marginBottom: 8 }}>{copy.planetDescriptions[selected.name as keyof typeof copy.planetDescriptions] ?? selected.description}</div>
           <div style={{ fontSize: 11, color: 'rgba(120,130,200,0.5)', marginBottom: 12, letterSpacing: '0.05em' }}>
-            Coming soon
+            {copy.comingSoon}
           </div>
           <button
             onClick={() => setSelected(null)}
@@ -657,7 +681,7 @@ export default function SolarSystem() {
               color: 'rgba(160,175,255,0.6)', borderRadius: 8, padding: '4px 14px',
               fontSize: 12, cursor: 'pointer',
             }}
-          >close</button>
+          >{copy.close}</button>
         </div>
       )}
 
@@ -667,7 +691,7 @@ export default function SolarSystem() {
         color: 'rgba(120,140,220,0.4)', fontSize: 11, letterSpacing: '0.15em',
         textTransform: 'uppercase', pointerEvents: 'none',
       }}>
-        Drag to rotate · Scroll to zoom · Hover a planet
+        {copy.controlsHint}
       </div>
     </div>
   )

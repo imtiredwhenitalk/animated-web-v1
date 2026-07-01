@@ -12,7 +12,7 @@ function Animated_Loader({ children }: { children: React.ReactNode }) {
         return prev + 1
       })
     }, 28)
-    const timer = setTimeout(() => startExit(), 3000)
+    const timer = setTimeout(() => startExit(), 3600)
     return () => { clearInterval(interval); clearTimeout(timer) }
   }, [])
 

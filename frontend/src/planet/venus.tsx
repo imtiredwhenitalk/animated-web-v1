@@ -2,17 +2,26 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import SolarSystem from './planets'
+import { useLanguage } from '../components/Languagecontext'
 
 const navigation = [
-  { name: 'Planets', element: <Link to="SolarSystem" /> },
-  { name: 'Constellation', element: <Link to="Constellation" /> },
-  { name: 'Venus', element: <Link to="Venus" /> },
-  { name: 'Move to another planet', element: <Link to="earth" /> },
+  { name: 'Planets', element: <Link to="/planets" /> },
+  { name: 'Constellation', element: <Link to="/constellation" /> },
+  { name: 'Venus', element: <Link to="/venus" /> },
+  { name: 'Move to another planet', element: <Link to="/earth" /> },
 ]
 
 export default function Venus() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t } = useLanguage()
+  const copy = t.planets.pages.venus
+
+  const navItems = [
+    { name: t.planets.ui.planets, to: '/planets' },
+    { name: t.planets.ui.constellation, to: '/constellation' },
+    { name: 'Venus', to: '/venus' },
+    { name: t.planets.ui.moveToAnotherPlanet, to: '/earth' },
+  ]
 
   return (
     <div className="bg-black min-h-screen">
@@ -63,10 +72,10 @@ export default function Venus() {
 
             {/* Навігація на десктопі */}
             <div className="hidden lg:flex lg:gap-x-12">
-              {navigation.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.element.props.to}
+                  to={item.to}
                   className="text-sm/6 font-semibold text-white hover:text-amber-300 transition-colors"
                 >
                   {item.name}
@@ -75,12 +84,12 @@ export default function Venus() {
             </div>
             {/* Log in десктоп */}
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-              <a
-                href="#"
+              <Link
+                to="/settings"
                 className="text-sm/6 font-semibold text-white hover:text-amber-300 transition-colors"
               >
-                Settings <span aria-hidden="true">&rarr;</span>
-              </a>
+                {t.settings.title} <span aria-hidden="true">&rarr;</span>
+              </Link>
             </div>
 
           </nav>
@@ -112,22 +121,22 @@ export default function Venus() {
                 <div className="-my-6 divide-y divide-white/10">
                   <div className="space-y-2 py-6">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.element.props.to}
+                        to={item.element.props.to}
                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/10"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                   <div className="py-6">
-                    <a
-                      href="#"
+                    <Link
+                      to="/settings"
                       className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/10"
                     >
-                      Settings
-                    </a>
+                      {t.settings.title}
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -140,26 +149,26 @@ export default function Venus() {
         <div className="relative isolate px-6 pt-14 lg:px-8 min-h-screen flex items-center">
           <div className="max-w-xl lg:max-w-2xl lg:ml-24 py-32 sm:py-48 lg:py-56">
             <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-7xl leading-tight">
-              Welcome to the{' '}
+              {copy.intro}{' '}
               <span className="text-orange-500">Venus</span>{' '}
               {' '}
               <span className="text-amber-400"></span>
             </h1>
             <p className="mt-8 text-lg font-medium text-gray-300 sm:text-xl/8">
-              Venus is the second planet from the Sun and the hottest planet in the Solar System.
-              It is a gas giant with a mass more than two and a half times that of all the other planets combined.
+              {copy.description}
             </p>
             <div className="mt-10 flex items-center gap-x-6">
               <a
                 href="#"
                 className="rounded-md bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-orange-500 transition-colors"
               >
-                Learn more
+                {copy.primaryAction}
               </a>
               <a
                 href="#"
                 className="text-sm/6 font-semibold text-white hover:text-orange-300 transition-colors"
               >
+                {copy.secondaryAction}
               </a>
             </div>
           </div>

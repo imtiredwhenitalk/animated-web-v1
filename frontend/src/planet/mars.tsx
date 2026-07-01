@@ -2,16 +2,26 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useLanguage } from '../components/Languagecontext'
 
 const navigation = [
   { name: 'Planets', element: <Link to="/planets" /> },
   { name: 'Constellation', element: <Link to="/constellation" /> },
-  { name: 'Mars', element: <Link to="/Mars" /> },
-  { name: 'Move to another planet', element: <Link to="/Jupiter" /> },
+  { name: 'Mars', element: <Link to="/mars" /> },
+  { name: 'Move to another planet', element: <Link to="/jupiter" /> },
 ]
 
 export default function Mars() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { t } = useLanguage()
+  const copy = t.planets.pages.mars
+
+  const navLabel = (name: string) => {
+    if (name === 'Planets') return t.planets.ui.planets
+    if (name === 'Constellation') return t.planets.ui.constellation
+    if (name === 'Move to another planet') return t.planets.ui.moveToAnotherPlanet
+    return name
+  }
 
   return (
     <div className="bg-black min-h-screen">
@@ -65,10 +75,10 @@ export default function Mars() {
               {navigation.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.to}
+                  to={item.element.props.to}
                   className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
                 >
-                  {item.name}
+                  {navLabel(item.name)}
                 </Link>
               ))}
             </div>
@@ -78,7 +88,7 @@ export default function Mars() {
                 to="/settings"
                 className="text-sm/6 font-semibold text-white hover:text-indigo-300 transition-colors"
               >
-                Settings <span aria-hidden="true">&rarr;</span>
+                {t.settings.title} <span aria-hidden="true">&rarr;</span>
               </Link>
             </div>
 
@@ -113,11 +123,11 @@ export default function Mars() {
                     {navigation.map((item) => (
                       <Link
                         key={item.name}
-                        to={item.to}
+                        to={item.element.props.to}
                         onClick={() => setMobileMenuOpen(false)}
                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-white/10"
                       >
-                        {item.name}
+                        {navLabel(item.name)}
                       </Link>
                     ))}
                   </div>
@@ -127,7 +137,7 @@ export default function Mars() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-white/10"
                     >
-                      Settings
+                      {t.settings.title}
                     </Link>
                   </div>
                 </div>
@@ -140,25 +150,27 @@ export default function Mars() {
         <div className="relative isolate px-6 pt-14 lg:px-8 min-h-screen flex items-center justify-end">
           <div className="max-w-xl lg:max-w-2xl lg:mr-24 py-32 sm:py-48 lg:py-56">
             <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-7xl leading-tight">
-              Welcome to{' '}
+              {copy.intro}{' '}
               <span className="text-red-400">Mars</span>
             </h1>
             <p className="mt-8 text-lg font-medium text-gray-300 sm:text-xl/8">
-              Mars is the fourth planet from the Sun and the second-smallest planet in the Solar System.
-              Mars is a terrestrial planet with a thin atmosphere, and has a surface covered in reddish rust.
+              {copy.description}
+            </p>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-gray-400 sm:text-base">
+              {copy.supplemental}
             </p>
             <div className="mt-10 flex items-center gap-x-6">
               <Link
-                to="/learn-more"
+                to="/planets"
                 className="rounded-md bg-red-700 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-red-600 transition-colors"
               >
-                Learn more
+                {copy.primaryAction}
               </Link>
               <Link
-                to="/gallery"
+                to="/constellation"
                 className="text-sm/6 font-semibold text-white hover:text-red-300 transition-colors"
               >
-                View gallery
+                {copy.secondaryAction}
               </Link>
             </div>
           </div>
