@@ -319,7 +319,6 @@ export default function SolarSystem() {
     const W = mount.clientWidth || window.innerWidth
     const H = mount.clientHeight || window.innerHeight
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x02030a)
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 2000)
     camera.position.set(0, 55, 100)
     camera.lookAt(0, 0, 0)
