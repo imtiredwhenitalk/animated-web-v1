@@ -2,6 +2,20 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as THREE from 'three'
 import { useLanguage } from '../components/Languagecontext'
+import {
+  ArrowRight,
+  CircleDot,
+  Disc3,
+  Flame,
+  Globe,
+  MoonStar,
+  Orbit,
+  Snowflake,
+  Sparkles,
+  Stars,
+  SunMedium,
+  Wind,
+} from 'lucide-react'
 
 type PlanetInfo = {
   name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation'
@@ -104,6 +118,21 @@ const PLANETS: PlanetInfo[] = [
 // Constellation has no radius/distance/speed — it must never enter the
 // sphere-building / animation loop, only the sidebar button list below.
 const ORBIT_PLANETS = PLANETS.filter(p => p.name !== 'Constellation')
+
+const PLANET_ICONS = {
+  Sun: SunMedium,
+  Mercury: CircleDot,
+  Venus: Sparkles,
+  Earth: Globe,
+  Mars: Flame,
+  Jupiter: Orbit,
+  Saturn: Disc3,
+  Uranus: Wind,
+  Neptune: Wind,
+  Pluto: Snowflake,
+  Moon: MoonStar,
+  Constellation: Stars,
+} as const
 
 function makePlanetTexture(planet: PlanetInfo): THREE.CanvasTexture {
   const size = 512
@@ -290,14 +319,19 @@ export default function SolarSystem() {
     const W = mount.clientWidth || window.innerWidth
     const H = mount.clientHeight || window.innerHeight
     const scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x02030a)
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 2000)
     camera.position.set(0, 55, 100)
     camera.lookAt(0, 0, 0)
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setSize(W, H)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setClearColor(0x00000a)
+    renderer.setClearColor(0x000000, 0)
+    renderer.domElement.style.position = 'absolute'
+    renderer.domElement.style.inset = '0'
+    renderer.domElement.style.display = 'block'
+    renderer.domElement.style.zIndex = '3'
     mount.appendChild(renderer.domElement)
 
     // ── SUN ──────────────────────────────────────────────────
@@ -591,24 +625,21 @@ export default function SolarSystem() {
   }, [])
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#00000a', position: 'relative', overflow: 'hidden', fontFamily: 'system-ui, sans-serif' }}>
-      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
-
-      {/* Title */}
-      <div style={{ position: 'absolute', top: 28, left: 36, pointerEvents: 'none' }}>
-        <div style={{ fontSize: 26, fontWeight: 700, color: 'rgba(220,230,255,0.9)', letterSpacing: '0.05em' }}>{copy.title}</div>
-        <div style={{ fontSize: 12, color: 'rgba(140,160,255,0.5)', marginTop: 3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{copy.subtitle}</div>
-      </div>
+    <div className="solar-system-page">
+      <video className="solar-system-video" autoPlay muted loop playsInline preload="auto" aria-hidden="true">
+        <source src="/assets/cosmos.mp4" type="video/mp4" />
+      </video>
+      <div className="solar-system-video-overlay" />
+      <div className="solar-system-video-vignette" />
+      <div ref={mountRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 3 }} />
 
       {/* Planet buttons sidebar */}
-      <div style={{
-        position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)',
-        display: 'flex', flexDirection: 'column', gap: 8,
-      }}>
+      <div className="planet-sidebar">
         {PLANETS.map(p => {
           const isActive = hovered?.name === p.name || selected?.name === p.name
-          const isMoonActive = false
-          const renderButton = (planet: { name: string; color: string; route?: string }, active: boolean, indent = false) => (
+          const renderButton = (planet: { name: string; color: string; route?: string }, active: boolean, indent = false) => {
+            const Icon = PLANET_ICONS[planet.name as keyof typeof PLANET_ICONS] ?? CircleDot
+            return (
             <button
               key={planet.name}
               onClick={() => {
@@ -618,38 +649,23 @@ export default function SolarSystem() {
                   setSelected(planet as PlanetInfo)
                 }
               }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${active ? planet.color + '88' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: 10, padding: '7px 14px',
-                cursor: 'pointer', transition: 'all 0.2s',
-                color: active ? '#ffffff' : 'rgba(180,190,255,0.55)',
-                fontSize: indent ? 11 : 12, letterSpacing: '0.08em',
-                backdropFilter: 'blur(6px)',
-                whiteSpace: 'nowrap',
-                marginLeft: indent ? 16 : 0,
-                opacity: indent ? 0.9 : 1,
-              }}
+              className={`planet-button ${active ? 'is-active' : ''} ${indent ? 'is-indent' : ''}`}
             >
-              <div style={{
-                width: indent ? 7 : 9, height: indent ? 7 : 9, borderRadius: '50%',
-                background: planet.color, flexShrink: 0,
-                boxShadow: active ? `0 0 8px ${planet.color}` : 'none',
-                transition: 'box-shadow 0.2s',
-              }} />
-              {planet.name}
+              <span className="planet-button__icon" style={{ color: planet.color }}>
+                <Icon size={indent ? 11 : 12} strokeWidth={2.2} />
+              </span>
+              <span className="planet-button__label">{planet.name}</span>
               {planet.route && (
-                <span style={{ marginLeft: 4, opacity: 0.5, fontSize: 10 }}>→</span>
+                <ArrowRight size={12} className="planet-button__arrow" />
               )}
             </button>
-          )
+          )}
 
           if (p.name === 'Earth') {
             return (
               <div key={p.name} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {renderButton(p, isActive)}
-                {renderButton({ name: copy.moonLabel, color: '#aaaaaa', route: '/moon' }, isMoonActive, true)}
+                {renderButton({ name: copy.moonLabel, color: '#aaaaaa', route: '/moon' }, false, true)}
               </div>
             )
           }
@@ -660,37 +676,24 @@ export default function SolarSystem() {
 
       {/* Info card for planets without route */}
       {selected && !selected.route && (
-        <div style={{
-          position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(5,8,25,0.88)', border: '1px solid rgba(100,120,255,0.3)',
-          borderRadius: 16, padding: '18px 28px', backdropFilter: 'blur(12px)',
-          minWidth: 280, textAlign: 'center',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: selected.color }} />
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#e8eeff', letterSpacing: '0.05em' }}>{selected.name}</span>
+        <div className="planet-card">
+          <div className="planet-card__header">
+            <div className="planet-card__dot" style={{ background: selected.color }} />
+            <span className="planet-card__title">{selected.name}</span>
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(160,175,255,0.7)', lineHeight: 1.6, marginBottom: 8 }}>{copy.planetDescriptions[selected.name as keyof typeof copy.planetDescriptions] ?? selected.description}</div>
-          <div style={{ fontSize: 11, color: 'rgba(120,130,200,0.5)', marginBottom: 12, letterSpacing: '0.05em' }}>
+          <div className="planet-card__body">{copy.planetDescriptions[selected.name as keyof typeof copy.planetDescriptions] ?? selected.description}</div>
+          <div className="planet-card__meta">
             {copy.comingSoon}
           </div>
           <button
             onClick={() => setSelected(null)}
-            style={{
-              background: 'none', border: '1px solid rgba(100,120,255,0.3)',
-              color: 'rgba(160,175,255,0.6)', borderRadius: 8, padding: '4px 14px',
-              fontSize: 12, cursor: 'pointer',
-            }}
+            className="planet-card__close"
           >{copy.close}</button>
         </div>
       )}
 
       {/* Controls hint */}
-      <div style={{
-        position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)',
-        color: 'rgba(120,140,220,0.4)', fontSize: 11, letterSpacing: '0.15em',
-        textTransform: 'uppercase', pointerEvents: 'none',
-      }}>
+      <div className="solar-system-hint">
         {copy.controlsHint}
       </div>
     </div>
