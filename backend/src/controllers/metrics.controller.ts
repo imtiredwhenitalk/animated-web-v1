@@ -3,6 +3,12 @@
 import { Request, Response } from 'express';
 import { analytics } from '../services/analytics.service';
 
+let metricsController: MetricsController | undefined;
+
+export default function getMetricsController(): MetricsController {
+  metricsController ??= new MetricsController();
+  return metricsController;
+}
 export class MetricsController {
   getMetrics(req: Request, res: Response): void {
     const metrics = analytics.getMetrics();

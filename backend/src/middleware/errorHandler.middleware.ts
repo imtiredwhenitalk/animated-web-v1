@@ -10,6 +10,10 @@ export class AppError extends Error {
   }
 }
 
+export const createError = (message: string, statusCode: number = 500): AppError => {
+  return new AppError(message, statusCode);
+}
+
 export const errorHandler = (
   err: Error | AppError | ZodError,
   req: Request,

@@ -5,6 +5,24 @@ import app from '../app.js';
 const mockPlanets = vi.hoisted(() => [
   { id: 'earth', name: 'Earth', type: 'terrestrial' },
   { id: 'jupiter', name: 'Jupiter', type: 'gas_giant' },
+  { id: 'saturn', name: 'Saturn', type: 'gas_giant' },
+  { id: 'mars', name: 'Mars', type: 'terrestrial' },
+  { id: 'venus', name: 'Venus', type: 'terrestrial' },
+  { id: 'mercury', name: 'Mercury', type: 'terrestrial' },
+  { id: 'neptune', name: 'Neptune', type: 'ice_giant' },
+  { id: 'uranus', name: 'Uranus', type: 'ice_giant' },
+  { id: 'pluto', name: 'Pluto', type: 'dwarf' },
+  { id: 'sun', name: 'Sun', type: 'star' },
+  { id: 'libra', name: 'Libra', type: 'constellation' },
+  { id: 'leo', name: 'Leo', type: 'constellation' },
+  { id: 'scorpio', name: 'Scorpio', type: 'constellation' },
+  { id: 'gemini', name: 'Gemini', type: 'constellation' },
+  { id: 'cancer', name: 'Cancer', type: 'constellation' },
+  { id: 'virgo', name: 'Virgo', type: 'constellation' },
+  { id: 'pisces', name: 'Pisces', type: 'constellation' },
+  { id: 'aquarius', name: 'Aquarius', type: 'constellation' },
+  { id: 'capricorn', name: 'Capricorn', type: 'constellation' },
+  { id: 'sagittarius', name: 'Sagittarius', type: 'constellation' },
 ]);
 
 vi.mock('../services/planet.service.js', () => ({
@@ -28,7 +46,7 @@ describe('GET /api/planets', () => {
     const res = await request(app).get('/api/planets');
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data).toHaveLength(2);
+    expect(res.body.data).toHaveLength(mockPlanets.length);
   });
 
   it('підтримує limit', async () => {
@@ -45,7 +63,15 @@ describe('GET /api/planets/:id', () => {
   });
 
   it('повертає 404 для неіснуючої планети', async () => {
-    const res = await request(app).get('/api/planets/mars');
+    const res = await request(app).get('/api/planets/unknown');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('unknown routes', () => {
+  it('повертає 404 для невідомого маршруту', async () => {
+    const res = await request(app).get('/api/conseleration/id');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toContain('Маршрут');
   });
 });

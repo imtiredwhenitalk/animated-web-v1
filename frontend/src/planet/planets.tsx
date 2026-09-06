@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 
 type PlanetInfo = {
-  name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation'
+  name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation' | 'Cancer'
   radius?: number
   distance?: number
   speed?: number
@@ -112,6 +112,12 @@ const PLANETS: PlanetInfo[] = [
     rings: false,
     description: 'Constellation · Stars · Galaxies', route: '/constellation',
   },
+  {
+    name: 'Cancer', tilt: 0,
+    color: '#b9d8ff', emissive: '#07152e',
+    rings: false,
+    description: 'Cancer · The Beehive Cluster · Zodiac constellation', route: '/cancer',
+  },
 ]
 
 // Only planets that actually orbit in the 3D scene.
@@ -132,6 +138,7 @@ const PLANET_ICONS = {
   Pluto: Snowflake,
   Moon: MoonStar,
   Constellation: Stars,
+  Cancer: Stars,
 } as const
 
 function makePlanetTexture(planet: PlanetInfo): THREE.CanvasTexture {

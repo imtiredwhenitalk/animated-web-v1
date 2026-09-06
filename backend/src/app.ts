@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import planetRoutes from "./routes/planet.routes";
 import { notFoundHandler } from "./middleware/notFound.middleware";
 import { errorHandler } from "./middleware/errorHandler.middleware";
+import { loggerMiddleware } from "./middleware/logger.middleware";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(loggerMiddleware);
 
 app.get("/api/health", (_, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

@@ -7,6 +7,9 @@ const router = Router();
 const planetController = new PlanetController();
 const metricsController = new MetricsController();
 
+router.get('/metrics', (req, res) => metricsController.getMetrics(req, res));
+router.delete('/metrics/alerts', (req, res) => metricsController.clearAlerts(req, res));
+
 // Отримати всі планети – з валідацією query
 router.get(
   '/',
@@ -20,9 +23,5 @@ router.get(
   validate(planetIdSchema),
   (req, res) => planetController.getPlanetById(req, res)
 );
-
-// Метрики (без валідації, але можна додати за бажанням)
-router.get('/metrics', (req, res) => metricsController.getMetrics(req, res));
-router.delete('/metrics/alerts', (req, res) => metricsController.clearAlerts(req, res));
 
 export default router;
