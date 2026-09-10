@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import planetRoutes from "./routes/planet.routes";
+import zodiacRoutes from "./routes/zodiac.routes";
 import { notFoundHandler } from "./middleware/notFound.middleware";
 import { errorHandler } from "./middleware/errorHandler.middleware";
 import { loggerMiddleware } from "./middleware/logger.middleware";
@@ -25,6 +26,7 @@ app.get("/api/health", (_, res) => {
 });
 
 app.use("/api/planets", planetRoutes);
+app.use("/api/zodiac", zodiacRoutes);
 
 app.use(notFoundHandler);
 

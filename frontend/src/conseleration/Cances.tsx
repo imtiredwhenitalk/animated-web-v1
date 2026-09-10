@@ -18,10 +18,20 @@ function CancerScene() {
     const mount = mountRef.current
     if (!mount) return
 
+    const canvas = document.createElement('canvas')
+    const webglAvailable = Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    if (!webglAvailable) return
+
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100)
     camera.position.set(0, 0.2, 10)
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    } catch (error) {
+      console.warn('WebGL unavailable for Cancer scene:', error)
+      return
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(mount.clientWidth, mount.clientHeight)
     renderer.setClearColor(0x000000, 0)
@@ -108,7 +118,7 @@ function CancerScene() {
     }
   }, [])
 
-  return <div ref={mountRef} className="cancer-scene" aria-label="Тривимірна модель сузір'я Рака" />
+  return <div ref={mountRef} className="cancer-scene" aria-label="Тривимірна модель сузір'я Рака"><div className="cancer-webgl-fallback">♋<span>3D-графіка недоступна, але сторінка працює</span></div></div>
 }
 
 export default function Cancer() {
@@ -163,6 +173,8 @@ export default function Cancer() {
         .cancer-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
         .cancer-visual { min-width:0; }
         .cancer-scene { height:min(68vh, 680px); min-height:400px; cursor:grab; } .cancer-scene:active { cursor:grabbing; }
+        .cancer-webgl-fallback { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#dcecff; font:120px Georgia, serif; text-shadow:0 0 35px #8cb7e8; }
+        .cancer-webgl-fallback span { display:block; max-width:280px; margin-top:18px; color:#91a6c0; text-align:center; font:13px system-ui, sans-serif; text-shadow:none; }
         .cancer-caption { color:#7891ae; text-align:center; font:12px system-ui, sans-serif; }
         @media (max-width: 800px) { .cancer-layout { grid-template-columns:1fr; padding-top:30px; } .cancer-copy { max-width:none; } .cancer-copy h1 { font-size:78px; } .cancer-lead { font-size:18px; margin:20px 0; } .cancer-scene { min-height:300px; height:45vh; } }
       `}</style>
@@ -177,7 +189,7 @@ import { useLanguage } from '../components/Languagecontext'
 const navigation = [
   { name: 'Planets', element: <Link to="/planets" /> },
   { name: 'Constellation', element: <Link to="/constellation" /> },
-  { name: 'Cancer', element: <Link to="/leo" /> },
+
   { name: 'Move to another constellations', element: <Link to="/mars" /> },
 ]
 

@@ -1,238 +1,158 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import * as THREE from 'three'
+import { ZODIAC_SIGNS } from './zodiacData'
 
-// Simplified but recognizable zodiac star-map patterns.
-// Coordinates are in a local 0–100 viewBox per constellation.
-const ZODIAC = [
-  {
-    name: 'Aries', symbol: '♈', dates: '21 березня – 19 квітня', element: 'Вогонь',
-    desc: 'Овен · Сузір\'я барана · Першоі знак зодіаку, відкриває весняний цикл.',
-    stars: [[20, 70], [38, 55], [55, 45], [70, 35], [82, 25]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4]],
-    bright: [2, 3],
-  },
-  {
-    name: 'Taurus', symbol: '♉', dates: '20 квітня – 20 травня', element: 'Земля',
-    desc: 'Телець · Голова бика з V-подібним скупченням Гіад та яскравою зіркою Альдебаран.',
-    stars: [[50, 20], [35, 35], [65, 35], [25, 55], [75, 55], [15, 75], [85, 75]],
-    lines: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]],
-    bright: [0, 3, 4],
-  },
-  {
-    name: 'Gemini', symbol: '♊', dates: '21 травня – 20 червня', element: 'Повітря',
-    desc: 'Близнюки · Дві паралельні лінії зірок, що символізують братів Кастора і Поллукса.',
-    stars: [[25, 15], [22, 40], [20, 65], [18, 88], [70, 12], [68, 38], [66, 62], [64, 86]],
-    lines: [[0, 1], [1, 2], [2, 3], [4, 5], [5, 6], [6, 7], [1, 5]],
-    bright: [0, 4],
-  },
-  {
-    name: 'Cancer', symbol: '♋', dates: '21 червня – 22 липня', element: 'Вода',
-    desc: 'Рак · Найтьмяніше сузір\'я зодіаку, нагадує перевернуту літеру Y з розсіяним скупченням Ясла в центрі.',
-    stars: [[50, 15], [30, 40], [70, 40], [50, 60], [35, 85], [65, 85]],
-    lines: [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4], [3, 5]],
-    bright: [3],
-  },
-  {
-    name: 'Leo', symbol: '♌', dates: '23 липня – 22 серпня', element: 'Вогонь',
-    desc: 'Лев · Виразний "серп" (дзеркальний знак питання) утворює голову та гриву, трикутник — задню частину.',
-    stars: [[20, 35], [22, 18], [38, 12], [50, 22], [42, 40], [30, 50], [65, 45], [88, 50], [70, 70]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [4, 6], [6, 7], [7, 8], [8, 4]],
-    bright: [3, 7],
-  },
-  {
-    name: 'Virgo', symbol: '♍', dates: '23 серпня – 22 вересня', element: 'Земля',
-    desc: 'Діва · Найбільше сузір\'я зодіаку, ламана лінія зірок з яскравою Спікою в основі.',
-    stars: [[15, 20], [30, 35], [25, 55], [45, 45], [55, 30], [70, 50], [85, 80]],
-    lines: [[0, 1], [1, 2], [1, 3], [3, 4], [3, 5], [5, 6]],
-    bright: [6],
-  },
-  {
-    name: 'Libra', symbol: '♎', dates: '23 вересня – 22 жовтня', element: 'Повітря',
-    desc: 'Терези · Єдиний неживий знак зодіаку — чотирикутник, що зображує шальки терезів правосуддя.',
-    stars: [[50, 15], [25, 55], [75, 55], [35, 85], [65, 85]],
-    lines: [[0, 1], [0, 2], [1, 3], [2, 4], [1, 2]],
-    bright: [0],
-  },
-  {
-    name: 'Scorpio', symbol: '♏', dates: '23 жовтня – 21 листопада', element: 'Вода',
-    desc: 'Скорпіон · Виразний вигнутий хвіст із жалом, голова позначена рядом зірок, серце — червоний Антарес.',
-    stars: [[15, 25], [25, 18], [35, 25], [40, 40], [45, 55], [55, 65], [68, 68], [78, 60], [85, 45], [80, 30]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9]],
-    bright: [3],
-  },
-  {
-    name: 'Sagittarius', symbol: '♐', dates: '22 листопада – 21 грудня', element: 'Вогонь',
-    desc: 'Стрілець · Найвідоміший астеризм "чайник" — носик, ручка та кришка з ламаних ліній.',
-    stars: [[20, 45], [35, 30], [55, 28], [70, 40], [68, 60], [50, 65], [32, 60], [80, 35]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0], [2, 7]],
-    bright: [2],
-  },
-  {
-    name: 'Capricorn', symbol: '♑', dates: '22 грудня – 19 січня', element: 'Земля',
-    desc: 'Козеріг · Трикутна форма, що нагадує човен, символізує морського козла з риб\'ячим хвостом.',
-    stars: [[15, 35], [40, 20], [70, 25], [85, 55], [55, 75], [25, 60]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]],
-    bright: [2],
-  },
-  {
-    name: 'Aquarius', symbol: '♒', dates: '20 січня – 18 лютого', element: 'Повітря',
-    desc: 'Водолій · Ламана лінія зірок-«хвилі» струменя води, що ллється з глека водоноса.',
-    stars: [[20, 20], [35, 35], [25, 50], [45, 55], [60, 45], [55, 65], [75, 75], [85, 60]],
-    lines: [[0, 1], [1, 2], [1, 3], [3, 4], [3, 5], [5, 6], [6, 7]],
-    bright: [1],
-  },
-  {
-    name: 'Pisces', symbol: '♓', dates: '19 лютого – 20 березня', element: 'Вода',
-    desc: 'Риби · Дві риби, з\'єднані «шнуром» зірок, що сходяться у V-подібний вузол.',
-    stars: [[15, 25], [30, 40], [42, 55], [50, 70], [58, 55], [70, 40], [85, 25]],
-    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]],
-    bright: [3],
-  },
-]
+const SHAPES = [
+  [[20, 70], [38, 55], [55, 45], [70, 35], [82, 25]],
+  [[50, 20], [35, 35], [65, 35], [25, 55], [75, 55], [15, 75], [85, 75]],
+  [[25, 15], [22, 40], [20, 65], [18, 88], [70, 12], [68, 38], [66, 62], [64, 86]],
+  [[50, 15], [30, 40], [70, 40], [50, 60], [35, 85], [65, 85]],
+  [[20, 35], [22, 18], [38, 12], [50, 22], [42, 40], [30, 50], [65, 45], [88, 50], [70, 70]],
+  [[15, 20], [30, 35], [25, 55], [45, 45], [55, 30], [70, 50], [85, 80]],
+  [[50, 15], [25, 55], [75, 55], [35, 85], [65, 85]],
+  [[15, 25], [25, 18], [35, 25], [40, 40], [45, 55], [55, 65], [68, 68], [78, 60], [85, 45], [80, 30]],
+  [[20, 45], [35, 30], [55, 28], [70, 40], [68, 60], [50, 65], [32, 60], [80, 35]],
+  [[15, 35], [40, 20], [70, 25], [85, 55], [55, 75], [25, 60]],
+  [[20, 20], [35, 35], [25, 50], [45, 55], [60, 45], [55, 65], [75, 75], [85, 60]],
+  [[15, 25], [30, 40], [42, 55], [50, 70], [58, 55], [70, 40], [85, 25]],
+] as const
+
+const EDGES = [[0, 1], [1, 2], [2, 3], [3, 4], [1, 3], [3, 5], [5, 6], [6, 7], [7, 8], [8, 9]] as const
+
+function AtlasScene({ points }: { points: readonly (readonly [number, number])[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const mount = ref.current
+    if (!mount) return
+    const probe = document.createElement('canvas')
+    if (!probe.getContext('webgl') && !probe.getContext('experimental-webgl')) return
+
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
+    camera.position.set(0, 0, 8)
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
+    } catch {
+      return
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setClearColor(0x000000, 0)
+    mount.appendChild(renderer.domElement)
+
+    const group = new THREE.Group()
+    scene.add(group)
+    const material = new THREE.LineBasicMaterial({ color: 0x8ea7ff, transparent: true, opacity: 0.55 })
+    const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffedb0 })
+    const scale = 0.075
+    const offset = -3.75
+
+    EDGES.forEach(([a, b]) => {
+      if (!points[a] || !points[b]) return
+      const line = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(points[a][0] * scale + offset, -(points[a][1] - 50) * scale, 0),
+        new THREE.Vector3(points[b][0] * scale + offset, -(points[b][1] - 50) * scale, 0),
+      ])
+      group.add(new THREE.Line(line, material))
+    })
+
+    points.forEach(([x, y], index) => {
+      const star = new THREE.Mesh(new THREE.SphereGeometry(index === 0 ? 0.12 : 0.07, 12, 12), starMaterial)
+      star.position.set(x * scale + offset, -(y - 50) * scale, 0)
+      group.add(star)
+    })
+
+    const resize = () => {
+      const width = mount.clientWidth || 600
+      const height = mount.clientHeight || 500
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+      renderer.setSize(width, height, false)
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    let frame = 0
+    const animate = () => {
+      frame = requestAnimationFrame(animate)
+      group.rotation.y += 0.0015
+      group.rotation.z = Math.sin(Date.now() * 0.00025) * 0.025
+      renderer.render(scene, camera)
+    }
+    animate()
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('resize', resize)
+      group.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose()
+          if (Array.isArray(object.material)) object.material.forEach((item) => item.dispose())
+          else object.material.dispose()
+        }
+        if (object instanceof THREE.Line) {
+          object.geometry.dispose()
+          object.material.dispose()
+        }
+      })
+      renderer.dispose()
+      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement)
+    }
+  }, [points])
+
+  return (
+    <div ref={ref} className="atlas-scene" aria-label="Інтерактивна карта сузір'я">
+      <div className="atlas-fallback-stars" aria-hidden="true">✦</div>
+    </div>
+  )
+}
 
 export default function Constellation() {
   const navigate = useNavigate()
-  const [active, setActive] = useState<number | null>(null)
+  const [active, setActive] = useState(3)
+  const sign = ZODIAC_SIGNS[active]
+  const points = useMemo(() => SHAPES[active], [active])
 
   return (
-    <div style={{
-      minHeight: '100vh', width: '100%', background: '#00000a',
-      fontFamily: 'system-ui, sans-serif', color: '#e8eeff',
-      padding: '40px 5vw 80px', position: 'relative', overflowX: 'hidden',
-    }}>
-      {/* faint static starfield backdrop */}
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.5) 0, transparent 100%), radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.4) 0, transparent 100%), radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.3) 0, transparent 100%), radial-gradient(2px 2px at 85% 15%, rgba(255,255,255,0.4) 0, transparent 100%), radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,0.3) 0, transparent 100%)',
-        backgroundSize: '100% 100%',
-      }} />
+    <main className="atlas-page">
+      <header className="atlas-header">
+        <button className="atlas-back" onClick={() => navigate('/')}>← Сонячна система</button>
+        <span className="atlas-mark">NIGHT ATLAS · 2026</span>
+      </header>
 
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          background: 'none', border: '1px solid rgba(120,140,255,0.3)',
-          color: 'rgba(180,190,255,0.7)', borderRadius: 8, padding: '6px 16px',
-          fontSize: 13, cursor: 'pointer', marginBottom: 28,
-        }}
-      >← Сонячна система</button>
+      <section className="atlas-intro">
+        <p className="atlas-kicker">ЗОДІАК · НЕБЕСНА КАРТА</p>
+        <h1>Те, що видно<br /><em>між зірками.</em></h1>
+        <p className="atlas-lead">Дванадцять сузір’їв уздовж екліптики. Обери знак, щоб розглянути його форму та відкрити окрему сторінку.</p>
+      </section>
 
-      <div style={{ fontSize: 38, fontWeight: 700, letterSpacing: '0.04em', marginBottom: 6 }}>
-        Сузір'я Зодіаку
-      </div>
-      <div style={{ fontSize: 14, color: 'rgba(150,165,255,0.55)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 40 }}>
-        Наведи курсор на сузір'я, щоб побачити знак та дати
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: 28,
-        position: 'relative',
-      }}>
-        {ZODIAC.map((z, idx) => {
-          const isActive = active === idx
-          return (
-            <div
-              key={z.name}
-              onMouseEnter={() => setActive(idx)}
-              onMouseLeave={() => setActive(null)}
-              style={{
-                position: 'relative',
-                borderRadius: 20,
-                border: `1px solid ${isActive ? 'rgba(140,160,255,0.6)' : 'rgba(255,255,255,0.08)'}`,
-                background: isActive
-                  ? 'radial-gradient(circle at 50% 30%, rgba(80,90,200,0.18), rgba(5,8,25,0.9))'
-                  : 'rgba(255,255,255,0.02)',
-                boxShadow: isActive ? '0 0 50px rgba(110,130,255,0.25)' : 'none',
-                transition: 'all 0.3s ease',
-                transform: isActive ? 'scale(1.04)' : 'scale(1)',
-                padding: '22px 20px 26px',
-                cursor: 'default',
-                minHeight: 340,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <svg viewBox="0 0 100 100" style={{ width: '100%', height: 200, overflow: 'visible' }}>
-                {z.lines.map(([a, b], i) => {
-                  const [x1, y1] = z.stars[a]
-                  const [x2, y2] = z.stars[b]
-                  return (
-                    <line
-                      key={i}
-                      x1={x1} y1={y1} x2={x2} y2={y2}
-                      stroke={isActive ? 'rgba(160,180,255,0.9)' : 'rgba(140,160,255,0.4)'}
-                      strokeWidth={isActive ? 0.6 : 0.4}
-                      style={{ transition: 'all 0.3s ease' }}
-                    />
-                  )
-                })}
-                {z.stars.map(([x, y], i) => {
-                  const isBright = z.bright?.includes(i)
-                  const r = isBright ? (isActive ? 3.4 : 2.6) : (isActive ? 2 : 1.5)
-                  return (
-                    <circle
-                      key={i}
-                      cx={x} cy={y} r={r}
-                      fill={isBright ? '#fff7d8' : '#cfe0ff'}
-                      style={{
-                        transition: 'all 0.3s ease',
-                        filter: isActive
-                          ? `drop-shadow(0 0 ${isBright ? 6 : 3}px ${isBright ? '#ffe9a8' : '#9fc0ff'})`
-                          : 'none',
-                      }}
-                    />
-                  )
-                })}
-              </svg>
-
-              <div style={{ marginTop: 'auto', textAlign: 'center' }}>
-                <div style={{
-                  fontSize: isActive ? 54 : 34, lineHeight: 1, transition: 'all 0.3s ease',
-                  marginBottom: 8, color: isActive ? '#fff3c4' : 'rgba(220,230,255,0.5)',
-                  textShadow: isActive ? '0 0 24px rgba(255,230,160,0.6)' : 'none',
-                }}>
-                  {z.symbol}
-                </div>
-                <div style={{
-                  fontSize: isActive ? 24 : 18, fontWeight: 700, letterSpacing: '0.04em',
-                  transition: 'all 0.25s ease',
-                  color: isActive ? '#ffffff' : 'rgba(210,220,255,0.8)',
-                }}>
-                  {z.name}
-                </div>
-
-                {isActive && (
-                  <div style={{ marginTop: 10, animation: 'fadeIn 0.25s ease' }}>
-                    <div style={{ fontSize: 16, color: 'rgba(180,200,255,0.85)', fontWeight: 600, marginBottom: 4 }}>
-                      {z.dates}
-                    </div>
-                    <div style={{
-                      fontSize: 12, color: 'rgba(150,165,255,0.6)', letterSpacing: '0.1em',
-                      textTransform: 'uppercase', marginBottom: 10,
-                    }}>
-                      Стихія: {z.element}
-                    </div>
-                    <div style={{
-                      fontSize: 13.5, lineHeight: 1.6, color: 'rgba(200,210,255,0.75)',
-                      maxWidth: 280, margin: '0 auto',
-                    }}>
-                      {z.desc}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
+      <section className="atlas-workspace">
+        <div className="atlas-visual">
+          <div className="atlas-visual-label">{String(active + 1).padStart(2, '0')} / 12 · {sign.constellation}</div>
+          <AtlasScene points={points} />
+          <div className="atlas-visual-caption">Наведи / обери знак у списку праворуч</div>
+        </div>
+        <aside className="atlas-index">
+          <div className="atlas-index-heading"><span>Знаки</span><span>12</span></div>
+          <div className="atlas-list">
+            {ZODIAC_SIGNS.map((item, index) => (
+              <button key={item.id} className={`atlas-item ${active === index ? 'is-selected' : ''}`} onClick={() => setActive(index)}>
+                <span className="atlas-item-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="atlas-item-symbol">{item.symbol}</span>
+                <span className="atlas-item-name">{item.name}</span>
+                <span className="atlas-item-element">{item.element}</span>
+              </button>
+            ))}
+          </div>
+          <div className="atlas-detail">
+            <p>{sign.dates}</p>
+            <h2>{sign.name}</h2>
+            <span>{sign.description}</span>
+            <Link to={`/zodiac/${sign.id}`}>Відкрити досьє знака <b>↗</b></Link>
+          </div>
+        </aside>
+      </section>
+    </main>
   )
 }

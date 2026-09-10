@@ -5,10 +5,14 @@ import { translations, type LanguageCode, type Translation } from './translation
 const STORAGE_KEY = 'app-language'
 
 function detectInitialLanguage(): LanguageCode {
-  const stored = localStorage.getItem(STORAGE_KEY) as LanguageCode | null
-  if (stored && stored in translations) return stored
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY) as LanguageCode | null
+    if (stored && stored in translations) return stored
+  } catch {
+    // Storage may be disabled; fall back to browser language.
+  }
 
-  const browserLang = navigator.language.slice(0, 2)
+  const browserLang = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'uk'
   if (browserLang in translations) return browserLang as LanguageCode
 
   return 'uk'
@@ -26,7 +30,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<LanguageCode>(detectInitialLanguage)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, language)
+    try {
+      window.localStorage.setItem(STORAGE_KEY, language)
+    } catch {
+      // Continue without persistence when browser storage is unavailable.
+    }
     document.documentElement.lang = language
   }, [language])
 

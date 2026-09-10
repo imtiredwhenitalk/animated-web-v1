@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import * as THREE from 'three'
 import { useLanguage } from '../components/Languagecontext'
 import {
@@ -17,8 +18,17 @@ import {
   Wind,
 } from 'lucide-react'
 
+function supportsWebGL() {
+  try {
+    const canvas = document.createElement('canvas')
+    return Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+  } catch {
+    return false
+  }
+}
+
 type PlanetInfo = {
-  name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation' | 'Cancer'
+  name: 'Sun' | 'Mercury' | 'Venus' | 'Earth' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto' | 'Constellation'
   radius?: number
   distance?: number
   speed?: number
@@ -112,12 +122,7 @@ const PLANETS: PlanetInfo[] = [
     rings: false,
     description: 'Constellation · Stars · Galaxies', route: '/constellation',
   },
-  {
-    name: 'Cancer', tilt: 0,
-    color: '#b9d8ff', emissive: '#07152e',
-    rings: false,
-    description: 'Cancer · The Beehive Cluster · Zodiac constellation', route: '/cancer',
-  },
+
 ]
 
 // Only planets that actually orbit in the 3D scene.
@@ -138,7 +143,7 @@ const PLANET_ICONS = {
   Pluto: Snowflake,
   Moon: MoonStar,
   Constellation: Stars,
-  Cancer: Stars,
+
 } as const
 
 function makePlanetTexture(planet: PlanetInfo): THREE.CanvasTexture {
@@ -323,6 +328,8 @@ export default function SolarSystem() {
       ro.observe(mount)
     }
 
+    if (!supportsWebGL()) return
+
     const W = mount.clientWidth || window.innerWidth
     const H = mount.clientHeight || window.innerHeight
     const scene = new THREE.Scene()
@@ -330,7 +337,16 @@ export default function SolarSystem() {
     camera.position.set(0, 55, 100)
     camera.lookAt(0, 0, 0)
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    let renderer: THREE.WebGLRenderer
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: false })
+      renderer.outputColorSpace = THREE.SRGBColorSpace
+      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.15
+    } catch (error) {
+      console.warn('WebGL unavailable, showing CSS fallback:', error)
+      return
+    }
     renderer.setSize(W, H)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setClearColor(0x000000, 0)
@@ -638,6 +654,7 @@ export default function SolarSystem() {
       <div className="solar-system-video-overlay" />
       <div className="solar-system-video-vignette" />
       <div ref={mountRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 3 }} />
+      {!supportsWebGL() && <div className="webgl-fallback" aria-live="polite"><div className="webgl-fallback__orbit" /><div className="webgl-fallback__sun">☀</div><h1>Сонячна система</h1><p>3D-графіка недоступна в цьому браузері, але навігація працює.</p></div>}
 
       {/* Planet buttons sidebar */}
       <div className="planet-sidebar">
