@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Earth from './planet/earth'
 import Moon from './planet/moon'
 import Mars from './planet/mars'
@@ -12,19 +12,30 @@ import Uranus from './planet/uranus'
 import Neptune from './planet/neptune'
 import Pluto from './planet/pluto'
 import Sun from './planet/sun'
-
+import Animated_Loader from './components/Loader'
 import Constellation from './planet/conseleration'
 import ZodiacSignPage from './planet/ZodiacSignPage'
-
 import Settings from './components/settings'
 import './App.css'
 
-
 function App() {
   const location = useLocation()
+  const [loading, setLoading] = useState(!location.pathname.startsWith('/settings'))
+  const [loaderKey, setLoaderKey] = useState(location.key)
+  const isSettings = location.pathname === '/settings' || location.pathname.startsWith('/settings/')
+
   useEffect(() => {
     document.title = location.pathname === '/constellation' ? 'Сузірʼя Зодіаку' : 'Solar System'
   }, [location.pathname])
+
+  useEffect(() => {
+    if (isSettings) {
+      setLoading(false)
+      return
+    }
+    setLoaderKey(location.key)
+    setLoading(true)
+  }, [location.key, isSettings])
 
   const routes = (
     <Routes>
@@ -49,7 +60,12 @@ function App() {
     </Routes>
   )
 
-  return routes
+  if (isSettings) return routes
+  return loading ? (
+    <Animated_Loader key={loaderKey} onComplete={() => setLoading(false)}>
+      {routes}
+    </Animated_Loader>
+  ) : routes
 }
 
 export default App

@@ -83,6 +83,24 @@
 .atlas-detail a b { margin-left:8px; font-size:16px; }
 @media (max-width: 800px) { .atlas-workspace { grid-template-columns:1fr; } .atlas-visual { min-height:420px; border-right:0; border-bottom:1px solid rgba(230,230,220,.14); } .atlas-list { max-height:none; } .atlas-detail { margin-top:0; } .atlas-mark { display:none; } }
 
+.zodiac-dossier { min-height:100vh; padding:26px clamp(22px,6vw,96px) 64px; color:#edf0f7; background:#101116; font-family:Georgia,'Times New Roman',serif; }
+.dossier-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:18px; border-bottom:1px solid rgba(235,235,225,.16); font:12px system-ui,sans-serif; letter-spacing:.09em; }
+.dossier-header a { color:#aeb5c8; text-decoration:none; } .dossier-header a:hover { color:#fff; } .dossier-header span { color:#777d90; }
+.dossier-grid { display:grid; grid-template-columns:minmax(320px,.85fr) minmax(420px,1.15fr); gap:clamp(36px,8vw,130px); max-width:1250px; margin:clamp(54px,10vh,120px) auto 0; align-items:center; }
+.dossier-kicker { margin:0 0 30px; color:#c6a873; font:11px system-ui,sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+.dossier-sign { color:#e2c98f; font-size:82px; line-height:.8; text-shadow:0 0 35px rgba(226,201,143,.3); }
+.dossier-copy h1 { margin:12px 0 18px; font-size:clamp(58px,8vw,110px); line-height:.85; font-weight:400; letter-spacing:-.06em; }
+.dossier-subtitle { max-width:460px; margin:0 0 36px; color:#a9afc0; font:17px/1.6 system-ui,sans-serif; }
+.dossier-facts { border-top:1px solid rgba(235,235,225,.15); border-bottom:1px solid rgba(235,235,225,.15); }
+.dossier-facts div { display:flex; justify-content:space-between; gap:18px; padding:13px 0; border-bottom:1px solid rgba(235,235,225,.08); font:13px system-ui,sans-serif; } .dossier-facts div:last-child { border-bottom:0; }
+.dossier-facts span { color:#73798a; } .dossier-facts strong { color:#e0e2e8; font-weight:500; text-align:right; }
+.dossier-note { max-width:500px; color:#858b9b; font:13px/1.65 system-ui,sans-serif; }
+.dossier-actions { display:flex; align-items:center; gap:18px; margin-top:28px; } .dossier-actions button { border:1px solid #b99c68; padding:10px 15px; color:#e5d1a2; background:transparent; cursor:pointer; font:12px system-ui,sans-serif; } .dossier-actions button:hover { background:#b99c68; color:#161616; } .dossier-actions span { color:#666c7c; font:11px system-ui,sans-serif; }
+.dossier-sky { position:relative; min-height:560px; border:1px solid rgba(173,188,235,.16); background:radial-gradient(circle at 50% 50%, rgba(42,49,95,.42), transparent 50%), radial-gradient(circle at 80% 20%, rgba(196,155,78,.08), transparent 25%); overflow:hidden; }
+.dossier-sky:before { content:''; position:absolute; inset:7%; border:1px solid rgba(190,200,230,.1); border-radius:50%; transform:scaleY(.48); } .dossier-sky-label { position:absolute; top:18px; left:20px; z-index:2; color:#a3abc0; font:10px system-ui,sans-serif; letter-spacing:.16em; }
+.dossier-sky p { position:absolute; bottom:18px; left:20px; right:20px; color:#858b9c; font:11px/1.5 system-ui,sans-serif; } .zodiac-3d-scene { position:absolute; inset:50px 8% 48px; z-index:1; } .zodiac-3d-scene canvas { width:100%; height:100%; display:block; } .zodiac-scene-fallback { position:absolute; inset:0; display:grid; place-items:center; color:#f0d58f; font-size:140px; text-shadow:0 0 40px #c5964f; } .zodiac-3d-scene canvas ~ .zodiac-scene-fallback { display:none; }
+@media (max-width:850px) { .dossier-grid { grid-template-columns:1fr; margin-top:54px; } .dossier-sky { min-height:430px; } .dossier-header span { display:none; } }
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;

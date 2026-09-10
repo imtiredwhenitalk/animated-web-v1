@@ -1,9 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import './Loader.css'
 
-function Animated_Loader({ children }: { children: React.ReactNode }) {
+function Animated_Loader({ children, onComplete }: { children: React.ReactNode; onComplete?: () => void }) {
   const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState<'loading' | 'fadeout' | 'done'>('loading')
+
+  const startExit = useCallback(() => {
+    if (phase !== 'loading') return
+    setPhase('fadeout')
+    setTimeout(() => {
+      setPhase('done')
+      onComplete?.()
+    }, 1200)
+  }, [onComplete, phase])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -14,19 +23,13 @@ function Animated_Loader({ children }: { children: React.ReactNode }) {
     }, 28)
     const timer = setTimeout(() => startExit(), 3600)
     return () => { clearInterval(interval); clearTimeout(timer) }
-  }, [])
+  }, [startExit])
 
   useEffect(() => {
     const skip = () => { if (phase === 'loading') startExit() }
     window.addEventListener('keydown', skip)
     return () => window.removeEventListener('keydown', skip)
-  }, [phase])
-
-  const startExit = () => {
-    if (phase !== 'loading') return
-    setPhase('fadeout')
-    setTimeout(() => setPhase('done'), 1200)
-  }
+  }, [phase, startExit])
 
   return (
     <>
