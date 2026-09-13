@@ -126,7 +126,6 @@ The main goal of this project is to create an engaging educational platform abou
 ## 👨‍💻 Author
 
 ## Solo Full-Stack Developer Melnyk Oleksandr
-## Planet Designer x Designer Zinchenko Daryna
 
 Created with ❤️ and curiosity about the universe.
 
