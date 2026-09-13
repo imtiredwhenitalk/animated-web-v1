@@ -27,7 +27,7 @@ export default function Moon() {
       <div className="fixed inset-0 bg-black z-0" />
 
       <div
-        className="fixed z-[1] pointer-events-none"
+        className="fixed z-1 pointer-events-none"
         style={{
           right: '-5vw', top: '50%', transform: 'translateY(-50%)',
           width: '55vw', height: '55vw', borderRadius: '50%', overflow: 'hidden',

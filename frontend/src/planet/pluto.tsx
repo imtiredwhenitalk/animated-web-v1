@@ -38,7 +38,7 @@ export default function Pluto() {
       </video>
 
       {/* Темний оверлей */}
-      <div className="fixed inset-0 bg-black/40 z-[1]" />
+      <div className="fixed inset-0 bg-black/40 z-1" />
 
       {/* Весь контент поверх відео */}
       <div className="relative z-10">

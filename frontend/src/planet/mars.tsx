@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import MarsEasterEgg from './MarsEasterEgg'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -13,6 +14,7 @@ const navigation = [
 
 export default function Mars() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [easterEggOpen, setEasterEggOpen] = useState(false)
   const { t } = useLanguage()
   const copy = t.planets.pages.mars
 
@@ -38,7 +40,7 @@ export default function Mars() {
       </video>
 
       {/* Темний оверлей */}
-      <div className="fixed inset-0 bg-black/40 z-[1]" />
+      <div className="fixed inset-0 bg-black/40 z-1" />
 
       {/* Весь контент поверх відео */}
       <div className="relative z-10">
@@ -151,7 +153,15 @@ export default function Mars() {
           <div className="max-w-xl lg:max-w-2xl lg:mr-24 py-32 sm:py-48 lg:py-56">
             <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-7xl leading-tight">
               {copy.intro}{' '}
-              <span className="text-red-400">Mars</span>
+              <button
+                type="button"
+                onClick={() => setEasterEggOpen(true)}
+                title="Secret NASA mission"
+                className="group relative inline-flex cursor-pointer items-center gap-3 text-red-400 transition hover:text-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300/70 focus-visible:ring-offset-4 focus-visible:ring-offset-black"
+              >
+                Mars
+                <span className="inline-block text-base opacity-70 transition group-hover:scale-125 group-hover:opacity-100" aria-hidden="true">✦</span>
+              </button>
             </h1>
             <p className="mt-8 text-lg font-medium text-gray-300 sm:text-xl/8">
               {copy.description}
@@ -177,6 +187,7 @@ export default function Mars() {
         </div>
 
       </div>
+      {easterEggOpen && <MarsEasterEgg onClose={() => setEasterEggOpen(false)} />}
     </div>
   )
 }
